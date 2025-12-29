@@ -1,0 +1,13 @@
+<script>
+  const bgMusic = document.getElementById('bgMusic');
+
+  function startMusic() {
+    bgMusic.volume = 0.6;
+    bgMusic.play().catch(() => {});
+    document.removeEventListener('click', startMusic);
+    document.removeEventListener('touchstart', startMusic);
+  }
+
+  document.addEventListener('click', startMusic);
+  document.addEventListener('touchstart', startMusic);
+</script>

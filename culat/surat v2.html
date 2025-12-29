@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Surat Rahasia</title>
+  <meta name="theme-color" content="#8b4513">
+  <link rel="manifest" href="manifest.json">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap');
+
+    body {
+      margin: 0;
+      height: 100vh;
+      background: linear-gradient(135deg, #a71c9b, #4c0942);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      font-family: Arial, Helvetica, sans-serif ;
+      background: linear-gradient(135deg, #a71c9b, #4c0942);
+    }
+
+    .container {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      perspective: 1200px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    /* Amplop */
+    .envelope {
+      position: absolute;
+      width: 340px;
+      height: 220px;
+      background: #d4af37;
+      box-shadow: 0 15px 40px rgba(0,0,0,0.8);
+      cursor: pointer;
+      z-index: 10;
+    }
+
+    .flap {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; 
+  height: 100%;
+  /* Bagian luar (sebelum dibuka) = emas terang */
+  background: #d4af37;
+  /* Bagian dalam (saat dibuka) = emas agak gelap/krem */
+  background: linear-gradient(to bottom, 
+              #d4af37 0%, 
+              #e6c84a 30%, 
+              #c19a6b 100%);
+  clip-path: polygon(0% 0%, 50% 65%, 100% 0%, 100% 100%, 0% 100%);
+  transform-origin: top;
+  transition: transform 1s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+  box-shadow: 
+    inset 0 -15px 30px rgba(0,0,0,0.35),
+    0 10px 20px rgba(0,0,0,0.4);
+  z-index: 20;
+}
+
+    .seal {
+      position: absolute;
+      top: 78px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 64px;
+      height: 64px;
+      background: radial-gradient(#ff1a1a, #8b0000);
+      border-radius: 50%;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: gold;
+      font-size: 36px;
+      z-index: 30;
+      transition: all 0.9s ease;
+    }
+
+    .envelope {
+  position: absolute;
+  width: 340px;
+  height: 220px;
+  background: linear-gradient(to bottom, #e6c84a, #d4af37);
+  box-shadow: 0 15px 40px rgba(0,0,0,0.8);
+  cursor: pointer;
+  z-index: 10;
+  border-radius: 8px; /* tambah ini biar sudutnya halus */
+  overflow: hidden;   /* penting! biar flap tidak keluar dari radius */
+}
+
+    /* Surat */
+    .letter {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 320px;
+      max-width: 90vw;
+      height: 520px;
+      max-height: 80vh;
+      background: #fffef0;
+      padding: 40px 30px;
+      box-sizing: border-box;
+      border: 4px solid #8b4513;
+      border-radius: 12px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+      transform: translate(-50%, -50%) translateY(200px) scaleY(0.03) scaleX(0.9);
+      transform-origin: center bottom;
+      opacity: 0;
+      z-index: 200;
+      cursor: pointer;
+      overflow-y: auto;
+      transition: all 1.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+      font-size: 19px;
+      line-height: 2;
+      color: #333;
+      font-family: Arial, sans-serif;
+      isolation: isolate;
+      contain: paint;
+}
+
+    .letter.folded   { transform: translate(-50%, -50%) translateY(200px) scaleY(0.03) scaleX(0.9); opacity: 0; }
+    .letter.unfolded { transform: translate(-50%, -50%) translateY(0) scale(1); opacity: 1; }
+
+    .open .flap { transform: rotateX(-178deg); }
+    .open .seal { transform: translateX(-50%) rotate(720deg) scale(0); opacity: 0; }
+
+    h1 { text-align: center; color: #8b4513; margin: 0 0 30px; font-size: 34px; }
+
+    /* Dialog Ya/Tidak */
+    .dialog-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.6s;
+      z-index: 1000;
+    }
+    .dialog-overlay.show {
+      opacity: 1;
+      pointer-events: all;
+    }
+    .dialog {
+      background: #fffef0;
+      padding: 40px 30px;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+      text-align: center;
+      max-width: 90%;
+      transform: scale(0.7);
+      transition: transform 0.6s cubic-bezier(0.68, -0.55, 0.27 1.55);
+    }
+    .dialog.show {
+      transform: scale(1);
+    }
+    .dialog h2 {
+      font-size: 28px;
+      color: #8b4513;
+      margin: 0 0 30px;
+    }
+    .dialog button {
+      font-family: 'Dancing Script', cursive;
+      font-size: 24px;
+      padding: 12px 30px;
+      margin: 0 15px;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    .btn-yes {
+      background: #ff69b4;
+      color: white;
+    }
+    .btn-no {
+      background: #ddd;
+      color: #555;
+    }
+    .btn-yes:hover { background: #ff1493; transform: scale(1.1); }
+    .btn-no:hover  { background: #ccc; }
+
+#background {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+    /* Layer untuk hujan love */
+    #love-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 10;          /* DI BELAKANG SURAT */
+  pointer-events: none;
+  overflow: hidden;
+}
+
+    /* Hujan love */
+.heart {
+  position: absolute;
+  top: -100px !important;        /* pasti di luar layar atas */
+  left: 0;
+  pointer-events: none;
+  opacity: 0;
+  animation: fall linear forwards;
+  z-index: 50;
+  user-select: none;
+}
+
+@keyframes fall {
+  0% {
+    transform: translateY(-150px) translateX(0) rotate(0deg);
+    opacity: 0;
+  }
+  8% {
+    opacity: 1;
+  }
+  92% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(calc(100vh + 150px)) 
+               translateX(var(--drift)) 
+               rotate(720deg);
+    opacity: 0;
+  }
+}
+
+.heart.glow {
+  color: #fff;
+  text-shadow: 
+    0 0 10px #ff69b4,
+    0 0 20px #ff1493,
+    0 0 40px #ff69b4,
+    0 0 60px #ff1493;
+  animation: fall linear forwards, pulse 1.4s infinite alternate;
+}
+
+@keyframes pulse {
+  from { filter: brightness(1); }
+  to   { filter: brightness(1.8); }
+}
+
+.heart:nth-child(3n)  { font-size: 50px; }
+    .heart:nth-child(4n)  { font-size: 35px; }
+    .heart:nth-child(7n)  { font-size: 60px; color: #ff1493; }
+    .heart:nth-child(11n) { font-size: 45px; color: #fff; text-shadow: 0 0 15px #ff69b4; }
+    .heart.glow {
+      color: #fff;
+      text-shadow: 0 0 10px #ff69b4, 0 0 20px #ff1493, 0 0 40px #ff69b4;
+    }
+
+    @media (max-width: 480px) {
+      .envelope { width: 88vw; height: 56vw; max-width: 340px; max-height: 220px; }
+      .letter { width: 88vw; height: 78vh; padding: 30px 20px; font-size: 17px; }
+      .dialog h2 { font-size: 24px; }
+      .dialog button { font-size: 20px; padding: 10px 20px; }
+    }
+
+  </style>
+</head>
+<body>
+      <div id="love-layer"></div>
+      <div class="container">
+      <div class="envelope" id="envelope">
+      <div class="flap"></div>
+      <div class="seal">❤</div>
+      <div id="background"></div>
+
+    </div>
+
+    <div class="letter" id="letter">
+      <h1>Dear widsy</h2>
+      <p>
+        Aku mengenal tawamu,
+        diammu,
+        caramu hadir,
+        juga caramu menghilang, tanpa penjelasan.
+      </p>
+      <p>
+        Kadang aku berdiri di sisimu,
+        kadang aku harus menunggu tanpa tahu
+        apakah hari ini aku masih termasuk dalam perhatianmu.
+      </p>
+      <p>
+        Tapi aku tak pernah menuntut lebih.
+        Aku tahu,
+        kadang kau butuh ruang sendiri,
+        dan aku memberikannya.
+      </p>
+      <p>
+        Namun anehnya,
+        bahkan saat kau tak memberi kabar,
+        hatiku tak pernah benar-benar pergi.
+        Aku belajar mencintaimu dengan sabar,
+        tanpa menghitung seberapa sering aku diingat,
+        atau seberapa lama aku harus menunggu.
+      </p>
+      <p> 
+        Aku mencintaimu bukan karena kau selalu ada,
+        melainkan karena aku belajar
+        untuk menghargai setiap momen kita bersama.
+      </p>
+      <p>
+        Aku menyukaimu apa adanya
+        dengan hangatmu yang tiba-tiba,
+        dan dinginmu yang tak pernah kau jelaskan.
+      </p>
+      <p>
+        Aku mencintaimu bukan karena kau sempurna,
+        melainkan karena bersamamu
+        aku belajar menerima ketidaksempurnaan tanpa mengurangi rasa.
+        Jika suatu hari kau bertanya
+        mengapa aku tetap di sini meski sering bingung,
+        jawabannya sederhana:
+        karena setiap versi dirimu
+        tetap membuatku memilih tinggal.
+      </p>
+      <p>
+        Dan jika kelak aku berani mengatakan ini langsung padamu,
+        itu bukan untuk menuntut,
+        melainkan agar kau tahu 
+        di dekatmu,
+        ada seseorang yang mencintaimu dengan tenang,
+        dalam,dan sungguh-sungguh.
+      </p>
+      <p>
+        Ketika kau membuka surat ini, aku ingin kau tahu bahwa setiap detik aku memikirkanmu. 
+        Senyummu adalah matahari pagiku, dan suaramu adalah lagu pengantar tidurku.
+      </p>
+      <p>
+        Maaf jika kadang aku diam, bukan karena aku tak peduli, tapi karena terlalu banyak kata 
+        yang ingin kusampaikan hingga aku takut salah ucap.
+      </p>
+      <p>
+        Aku mencintaimu lebih dari kata-kata yang bisa kutulis di kertas ini. 
+        Selamanya akan kurindukan kamu, bahkan ketika kau ada di sampingku.
+      </p>
+      <p style="text-align:right;">
+        — <i>Dari hatiku yang hanya untukmu</i> ♡
+      </p>
+    </div>
+  </div>
+
+  <!-- Dialog Ya/Tidak -->
+  <div class="dialog-overlay" id="dialogOverlay">
+    <div class="dialog" id="dialog">
+      <h2>Apakah kamu <br>menyukainya?</h2>
+      <button class="btn-yes" id="btnYes">Ya</button>
+      <button class="btn-no" id="btnNo">Tidak</button>
+    </div>
+  </div>
+
+  <audio id="bgMusic" src="Nadhif_Basalamah_-_bergema_sampai_selamanya_.mp3" loop></audio>
+  <audio id="openSfx" src="magic-fairy.mp3"></audio>
+  <audio id="closeSfx" src="magic-fairy.mp3"></audio>
+
+  <script>
+    const envelope = document.getElementById('envelope');
+    const letter = document.getElementById('letter');
+    const bgMusic = document.getElementById('bgMusic');
+    const openSfx = document.getElementById('openSfx');
+    const closeSfx = document.getElementById('closeSfx');
+    const dialogOverlay = document.getElementById('dialogOverlay');
+    const dialog = document.getElementById('dialog');
+    const btnYes = document.getElementById('btnYes');
+    const btnNo = document.getElementById('btnNo');
+
+    let isOpen = false;
+    let loveStarted = false;
+
+    function mulaiHujanLove() {
+  if (loveStarted) return;   // ❗ agar hanya mulai sekali
+  loveStarted = true;
+
+  const hearts = ['❤','♡','💕','💖','💗','💘','💝','❣️','✨','🌸','🌷','🌹','🩷','💮'];
+
+setInterval(() => {
+  const h = document.createElement('div');
+  h.className = 'heart';
+  if (Math.random() > 0.55) h.classList.add('glow');
+
+  h.innerHTML = hearts[Math.floor(Math.random() * hearts.length)];
+  h.style.left = Math.random() * 100 + 'vw';
+
+  const size = 20 + Math.random() * 50;
+  h.style.fontSize = size + 'px';
+
+  const drift = (Math.random() - 0.5) * 300;
+  h.style.setProperty('--drift', drift + 'px');
+
+  h.style.animationDuration = (5 + Math.random() * 5) + 's';
+  h.style.animationDelay = Math.random() * 1.5 + 's';
+
+  document.getElementById('background').appendChild(h);
+  setTimeout(() => h.remove(), 12000);
+}, 300);
+    }
+
+
+function bukaSurat() {
+  if (isOpen) return;
+  isOpen = true;
+
+  bgMusic.volume = 0.6;
+  bgMusic.play().catch(() => {});
+
+  envelope.classList.add('open');
+  openSfx.currentTime = 0;
+  openSfx.play().catch(() => {});
+
+  mulaiHujanLove(); // 💕 MULAI SAAT SURAT DIBUKA
+
+  setTimeout(() => {
+    letter.classList.remove('folded');
+    letter.classList.add('unfolded');
+  }, 600);
+}
+
+    function tutupSurat() {
+      if (!isOpen) return;
+      isOpen = false;
+
+      letter.classList.remove('unfolded');
+      closeSfx.currentTime = 0;
+      closeSfx.play().catch(() => {});
+
+      setTimeout(() => {
+        letter.classList.add('folded');
+        envelope.classList.remove('open');
+
+        // Munculkan dialog setelah amplop tertutup kembali
+        setTimeout(() => {
+          dialogOverlay.classList.add('show');
+          setTimeout(() => dialog.classList.add('show'), 100);
+        }, 300);
+      }, 1300);
+    }
+
+    // Klik amplop → buka
+    envelope.addEventListener('click', e => {
+      e.stopPropagation();
+      bukaSurat();
+    });
+
+    // Klik surat → tutup
+    letter.addEventListener('click', e => {
+      e.stopPropagation();
+      tutupSurat();
+    });
+
+    // Biar klik teks tidak menutup surat
+    letter.querySelectorAll('h1, p').forEach(el => {
+      el.addEventListener('click', e => e.stopPropagation());
+    });
+
+    // Tombol Ya
+btnYes.addEventListener('click', () => {
+  dialogOverlay.classList.remove('show');
+  dialog.classList.remove('show');
+
+  alert("Aku sudah tahu kok ♡ Makasih ya sayang 💕");
+    // spawn setiap 45ms → hujan deras
+});
+
+    // Tombol Tidak (lucu biar ga baper)
+    btnNo.addEventListener('click', () => {
+      dialogOverlay.classList.remove('show');
+      dialog.classList.remove('show');
+      alert("Yahhh aku jadi sedih, kamu bohong kan ? 😢");
+    });
+
+    // PWA
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js').catch(() => {});
+    }
+  </script>
+</body>
+</html>
