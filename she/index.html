@@ -59,7 +59,9 @@
 <body>
   <h1>💕 Koleksi Foto untuk Widsy 💕</h1>
   <div class="gallery" id="gallery"></div>
-
+  <div class="photo-modal" id="photoModal">
+    <img id="modalImage" src="" alt="Foto besar">
+  </div>
   <div class="back">
     <a href="../index.html">← Kembali ke Halaman Utama</a>
   </div>
@@ -121,6 +123,21 @@
       };
       document.body.appendChild(playButton);
     });
+
+    const modal = document.getElementById('photoModal');
+    const modalImg = document.getElementById('modalImage');
+
+    document.getElementById('gallery').addEventListener('click', (e) => {
+      if (e.target.tagName === 'IMG') {
+        modalImg.src = e.target.src;
+        modal.classList.add('active');
+      }
+    });
+
+    modal.addEventListener('click', () => {
+      modal.classList.remove('active');
+    });
+    
   </script>
 </body>
 </html>
