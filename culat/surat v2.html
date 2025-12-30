@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Surat Rahasia</title>
+  <meta name="theme-color" content="#8b4513">
+  <link rel="manifest" href="manifest.json">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap');
+
+    body {
+      margin: 0;
+      height: 100vh;
+      background: linear-gradient(135deg, #a71c9b, #4c0942);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      font-family: Arial, Helvetica, sans-serif ;
+    }
+
+    /* Slideshow Background */
+        /* Slideshow Album Foto - MODAL DENGAN BLUR LAYAR + BESAR + ANIMASI MUNcul DARI DALAM LAYAR */
+    #slideshow-container {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      background-color: rgba(0, 0, 0, 0.8);  /* overlay lebih gelap agar fokus ke foto */
+      backdrop-filter: blur(12px);  /* blur layar belakang lebih kuat */
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 1.5s ease;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    #slideshow-container.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    #slideshow {
+      width: 95vw;           /* LEBIH BESAR: hampir penuh layar lebar */
+      max-width: 1200px;
+      height: 85vh;          /* tinggi besar, tetap proporsional */
+      max-height: 900px;
+      background-size: contain;
+      background-position: center;
+      background-repeat: no-repeat;
+      border-radius: 20px;
+      padding: 20px;
+      opacity: 0;            /* mulai tidak terlihat */
+      transform: scale(0.3); /* mulai kecil di tengah */
+      transition: 
+        opacity 1.2s ease,
+        transform 1.4s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+        background-image 1.8s ease-in-out;
+    }
+
+    /* ANIMASI: Muncul tiba-tiba dari dalam layar (zoom + fade) */
+    #slideshow-container.active #slideshow {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .container {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      perspective: 1200px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    /* Amplop */
+    .envelope {
+      position: absolute;
+      width: 340px;
+      height: 220px;
+      background: #d4af37;
+      box-shadow: 0 15px 40px rgba(0,0,0,0.8);
+      cursor: pointer;
+      z-index: 10;
+    }
+
+    .flap {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; 
+      height: 100%;
+      background: linear-gradient(to bottom, 
+                  #d4af37 0%, 
+                  #e6c84a 30%, 
+                  #c19a6b 100%);
+      clip-path: polygon(0% 0%, 50% 65%, 100% 0%, 100% 100%, 0% 100%);
+      transform-origin: top;
+      transition: transform 1s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+      box-shadow: 
+        inset 0 -15px 30px rgba(0,0,0,0.35),
+        0 10px 20px rgba(0,0,0,0.4);
+      z-index: 20;
+    }
+
+    .envelope.open .flap {
+      transform: rotateX(180deg);
+    }
+
+    .seal {
+      position: absolute;
+      top: 78px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 64px;
+      height: 64px;
+      background: radial-gradient(#ff1a1a, #8b0000);
+      border-radius: 50%;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: gold;
+      font-size: 36px;
+      z-index: 30;
+      transition: all 0.9s ease;
+    }
+
+    .envelope {
+  position: absolute;
+  width: 340px;
+  height: 220px;
+  background: linear-gradient(to bottom, #e6c84a, #d4af37);
+  box-shadow: 0 15px 40px rgba(0,0,0,0.8);
+  cursor: pointer;
+  z-index: 10;
+  border-radius: 8px;
+  overflow: visible;  /* UBAH DARI hidden MENJADI visible */
+}
+
+    /* Surat */
+    .letter {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 320px;
+      max-width: 90vw;
+      height: auto;
+      min-height: 600px;
+      max-height: 80vh;
+      background: #fffef0;
+      padding: 60px 40px 50px;  /* padding atas lebih besar untuk ruang tag */
+      box-sizing: border-box;
+      border: none;  /* hilangkan border samping, hanya bottom gold */
+      border-bottom: 20px solid #d4af37;  /* border bawah tebal gold seperti foto */
+      border-radius: 12px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.4);  /* shadow lebih soft */
+      transform: translate(-50%, -50%) translateY(100px) scaleY(0.1) scaleX(0.8);
+      transform-origin: center bottom;
+      opacity: 0;
+      z-index: 200;
+      cursor: pointer;
+      overflow-y: auto;
+      transition: all 1.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+      font-size: 19px;
+      line-height: 2;
+      color: #333;
+      font-family: Arial, sans-serif;
+      text-align: center;  /* teks center seperti foto */
+      isolation: isolate;
+      contain: paint;
+    }
+
+    .letter::before {  /* Tag atas dengan lubang hati pink seperti foto */
+      content: '';
+      position: absolute;
+      top: -30px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60px;
+      height: 40px;
+      background: #d4af37;  /* gold seperti border */
+      border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+      box-shadow: 0 5px 10px rgba(0,0,0,0.3);
+    }
+
+    .letter::before::after {  /* Lubang hati pink di tag atas */
+      content: '💖';  /* emoji hati pink */
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 24px;
+      color: #ff69b4;  /* pink glow seperti foto */
+      filter: drop-shadow(0 0 5px rgba(255,105,180,0.7));
+    }
+
+    .letter::after {  /* Pointer segitiga bawah putih seperti foto */
+      content: '';
+      position: absolute;
+      bottom: -15px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      border-left: 15px solid transparent;
+      border-right: 15px solid transparent;
+      border-top: 15px solid #fffef0;  /* warna sama background surat */
+    }
+
+    .letter.folded   { 
+      transform: translate(-50%, -50%) translateY(100px) scaleY(0.1) scaleX(0.8); 
+      opacity: 0; 
+    }
+    .letter.unfolded { 
+      transform: translate(-50%, -50%) translateY(-50px) scale(1); 
+      opacity: 1; 
+    }
+
+    /* Animasi membuka amplop */
+    .open .flap { transform: rotateX(-178deg); }
+    .open .seal { transform: translateX(-50%) rotate(720deg) scale(0); opacity: 0; }
+
+    h1 { text-align: center; color: #8b4513; margin: 0 0 30px; font-size: 34px; }
+
+    /* Dialog Ya/Tidak */
+    .dialog-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.6s;
+      z-index: 1000;
+    }
+    .dialog-overlay.show {
+      opacity: 1;
+      pointer-events: all;
+    }
+    .dialog {
+      background: #fffef0;
+      padding: 40px 30px;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+      text-align: center;
+      max-width: 90%;
+      transform: scale(0.7);
+      transition: transform 0.6s cubic-bezier(0.68, -0.55, 0.27 1.55);
+    }
+    .dialog.show {
+      transform: scale(1);
+    }
+    .dialog h2 {
+      font-size: 28px;
+      color: #8b4513;
+      margin: 0 0 30px;
+    }
+    .dialog button {
+      font-family: 'Dancing Script', cursive;
+      font-size: 24px;
+      padding: 12px 30px;
+      margin: 0 15px;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    .btn-yes {
+      background: #ff69b4;
+      color: white;
+    }
+    .btn-no {
+      background: #ddd;
+      color: #555;
+    }
+    .btn-yes:hover { background: #ff1493; transform: scale(1.1); }
+    .btn-no:hover  { background: #ccc; }
+
+#background {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+    /* Layer untuk hujan love */
+    #love-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 10;          /* DI BELAKANG SURAT */
+  pointer-events: none;
+  overflow: hidden;
+}
+
+    /* Hujan love */
+.heart {
+  position: absolute;
+  top: -100px !important;        /* pasti di luar layar atas */
+  left: 0;
+  pointer-events: none;
+  opacity: 0;
+  animation: fall linear forwards;
+  z-index: 50;
+  user-select: none;
+}
+
+@keyframes fall {
+  0% {
+    transform: translateY(-150px) translateX(0) rotate(0deg);
+    opacity: 0;
+  }
+  8% {
+    opacity: 1;
+  }
+  92% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(calc(100vh + 150px)) 
+               translateX(var(--drift)) 
+               rotate(720deg);
+    opacity: 0;
+  }
+}
+
+.heart.glow {
+  color: #fff;
+  text-shadow: 
+    0 0 10px #ff69b4,
+    0 0 20px #ff1493,
+    0 0 40px #ff69b4,
+    0 0 60px #ff1493;
+  animation: fall linear forwards, pulse 1.4s infinite alternate;
+}
+
+@keyframes pulse {
+  from { filter: brightness(1); }
+  to   { filter: brightness(1.8); }
+}
+
+.heart:nth-child(3n)  { font-size: 50px; }
+    .heart:nth-child(4n)  { font-size: 35px; }
+    .heart:nth-child(7n)  { font-size: 60px; color: #ff1493; }
+    .heart:nth-child(11n) { font-size: 45px; color: #fff; text-shadow: 0 0 15px #ff69b4; }
+    .heart.glow {
+      color: #fff;
+      text-shadow: 0 0 10px #ff69b4, 0 0 20px #ff1493, 0 0 40px #ff69b4;
+    }
+
+    @media (max-width: 480px) {
+      .envelope { width: 88vw; height: 56vw; max-width: 340px; max-height: 220px; }
+      .letter { width: 88vw; height: 78vh; padding: 30px 20px; font-size: 17px; }
+      .dialog h2 { font-size: 24px; }
+      .dialog button { font-size: 20px; padding: 10px 20px; }
+    }
+
+    /* PARTIKEL DEBU BERSINAR (TRAIL EFEK) */
+       /* EFEK DEBU BERSINAR SAAT POINTER BERGERAK */
+    .pointer-sparkle {
+      position: fixed;
+      pointer-events: none;
+      width: 8px;
+      height: 8px;
+      background: radial-gradient(circle, #fff 20%, transparent 60%);
+      border-radius: 50%;
+      box-shadow: 0 0 10px #ff69b4, 0 0 20px #ffffff;
+      opacity: 0.9;
+      z-index: 9999;
+      animation: pointerSparkleFall 1s ease-out forwards;
+    }
+
+    @keyframes pointerSparkleFall {
+      0% {
+        opacity: 0.9;
+        transform: translateY(0) scale(1);
+      }
+      100% {
+        opacity: 0;
+        transform: translateY(80px) scale(0.3);
+      }
+    }
+
+  </style>
+</head>
+<body>
+  <div id="slideshow-container">
+    <div id="slideshow"></div>
+  </div>
+      <div id="love-layer"></div>
+      <div class="container">
+      <div class="envelope" id="envelope">
+      <div class="flap"></div>
+      <div class="seal">❤</div>
+      <div id="background"></div>
+      <div id="slideshow-container">
+     <div id="slideshow"></div>
+
+    </div>
+
+    <div class="letter" id="letter">
+      <h1>Dear widsy</h2>
+      <p>
+        Aku mengenal tawamu,
+        diammu,
+        caramu hadir,
+        juga caramu menghilang, tanpa penjelasan.
+      </p>
+      <p>
+        Kadang aku berdiri di sisimu,
+        kadang aku harus menunggu tanpa tahu
+        apakah hari ini aku masih termasuk dalam perhatianmu.
+      </p>
+      <p>
+        Tapi aku tak pernah menuntut lebih.
+        Aku tahu,
+        kadang kau butuh ruang sendiri,
+        dan aku memberikannya.
+      </p>
+      <p>
+        Namun anehnya,
+        bahkan saat kau tak memberi kabar,
+        hatiku tak pernah benar-benar pergi.
+        Aku belajar mencintaimu dengan sabar,
+        tanpa menghitung seberapa sering aku diingat,
+        atau seberapa lama aku harus menunggu.
+      </p>
+      <p> 
+        Aku mencintaimu bukan karena kau selalu ada,
+        melainkan karena aku belajar
+        untuk menghargai setiap momen kita bersama.
+      </p>
+      <p>
+        Aku menyukaimu apa adanya
+        dengan hangatmu yang tiba-tiba,
+        dan dinginmu yang tak pernah kau jelaskan.
+      </p>
+      <p>
+        Aku mencintaimu bukan karena kau sempurna,
+        melainkan karena bersamamu
+        aku belajar menerima ketidaksempurnaan tanpa mengurangi rasa.
+        Jika suatu hari kau bertanya
+        mengapa aku tetap di sini meski sering bingung,
+        jawabannya sederhana:
+        karena setiap versi dirimu
+        tetap membuatku memilih tinggal.
+      </p>
+      <p>
+        Dan jika kelak aku berani mengatakan ini langsung padamu,
+        itu bukan untuk menuntut,
+        melainkan agar kau tahu 
+        di dekatmu,
+        ada seseorang yang mencintaimu dengan tenang,
+        dalam,dan sungguh-sungguh.
+      </p>
+      <p>
+        Ketika kau membuka surat ini, aku ingin kau tahu bahwa setiap detik aku memikirkanmu. 
+        Senyummu adalah matahari pagiku, dan suaramu adalah lagu pengantar tidurku.
+      </p>
+      <p>
+        Maaf jika kadang aku diam, bukan karena aku tak peduli, tapi karena terlalu banyak kata 
+        yang ingin kusampaikan hingga aku takut salah ucap.
+      </p>
+      <p>
+        Aku mencintaimu lebih dari kata-kata yang bisa kutulis di kertas ini. 
+        Selamanya akan kurindukan kamu, bahkan ketika kau ada di sampingku.
+      </p>
+      <p style="text-align:right;">
+        — <i>Dari hatiku yang hanya untukmu</i> ♡
+      </p>
+    </div>
+  </div>
+
+  <!-- Dialog Ya/Tidak -->
+  <div class="dialog-overlay" id="dialogOverlay">
+    <div class="dialog" id="dialog">
+      <h2>Apakah kamu <br>menyukainya?</h2>
+      <button class="btn-yes" id="btnYes">Ya</button>
+      <button class="btn-no" id="btnNo">Tidak</button>
+    </div>
+  </div>
+
+  <audio id="bgMusic" src="Nadhif_Basalamah_-_bergema_sampai_selamanya_.mp3" loop></audio>
+  <audio id="openSfx" src="magic-fairy.mp3"></audio>
+  <audio id="closeSfx" src="magic-fairy.mp3"></audio>
+
+  <script>
+    const envelope = document.getElementById('envelope');
+    const letter = document.getElementById('letter');
+    const bgMusic = document.getElementById('bgMusic');
+    const openSfx = document.getElementById('openSfx');
+    const closeSfx = document.getElementById('closeSfx');
+    const dialogOverlay = document.getElementById('dialogOverlay');
+    const dialog = document.getElementById('dialog');
+    const btnYes = document.getElementById('btnYes');
+    const btnNo = document.getElementById('btnNo');
+    const slideshowImages = [
+      'she/she/5ba12c41cdc6ce109dc4f8e200f87858.jpg',
+      'she/she/IMG-ljfh89b7.jpg',
+      'she/she/IMG-lmxfvjzw.jpg',
+      'she/she/IMG-lnbvqdgw.jpg',
+      'she/she/IMG-lqt9d58i.jpg',
+      'she/she/IMG-lrrbutnj.jpg',
+      'she/she/6285819928352_status_d08c1b00be564a8dae3d9af6f4a6881a.jpg',
+      'she/she/6285819928352_status_634d56fbe8754251b9b96fc80fb2ca1e.jpg',
+      'she/she/41c42d6a0c826130983710ecf5c6aeb8.jpg',
+      'she/she/6285819928352_status_4dcb3124ce624c9eb44fedb295bb5373.jpg',
+      'she/she/IMG-20240111-WA0024.jpg',
+      'she/she/IMG-loxsto82.jpg'
+    ];
+    let isOpen = false;
+    let loveStarted = false;
+    let currentSlide = 0;
+    const slideshow = document.getElementById('slideshow');
+    const slideshowContainer = document.getElementById('slideshow-container');
+
+        function startSlideshow() {
+      slideshowContainer.classList.add('active');
+      slideshow.style.backgroundImage = `url(${slideshowImages[0]})`;
+
+      setInterval(() => {
+        currentSlide = (currentSlide + 1) % slideshowImages.length;
+        slideshow.style.backgroundImage = `url(${slideshowImages[currentSlide]})`;
+      }, 4000);  // ganti setiap 4 detik
+    }
+
+    function mulaiHujanLove() {
+  if (loveStarted) return;   // ❗ agar hanya mulai sekali
+  loveStarted = true;
+
+  const hearts = ['❤','♡','💕','💖','💗','💘','💝','❣️','✨','🌸','🌷','🌹','🩷','💮'];
+
+setInterval(() => {
+  const h = document.createElement('div');
+  h.className = 'heart';
+  if (Math.random() > 0.55) h.classList.add('glow');
+
+  h.innerHTML = hearts[Math.floor(Math.random() * hearts.length)];
+  h.style.left = Math.random() * 100 + 'vw';
+
+  const size = 20 + Math.random() * 50;
+  h.style.fontSize = size + 'px';
+
+  const drift = (Math.random() - 0.5) * 300;
+  h.style.setProperty('--drift', drift + 'px');
+
+  h.style.animationDuration = (5 + Math.random() * 5) + 's';
+  h.style.animationDelay = Math.random() * 1.5 + 's';
+
+  document.getElementById('background').appendChild(h);
+  setTimeout(() => h.remove(), 12000);
+}, 300);
+    }
+
+
+function bukaSurat() {
+  if (isOpen) return;
+  isOpen = true;
+
+  bgMusic.volume = 0.6;
+  bgMusic.play().catch(() => {});
+
+  envelope.classList.add('open');
+  openSfx.currentTime = 0;
+  openSfx.play().catch(() => {});
+
+  mulaiHujanLove(); // 💕 MULAI SAAT SURAT DIBUKA
+
+  setTimeout(() => {
+    letter.classList.remove('folded');
+    letter.classList.add('unfolded');
+  }, 600);
+}
+
+    function tutupSurat() {
+      if (!isOpen) return;
+      isOpen = false;
+
+      letter.classList.remove('unfolded');
+      closeSfx.currentTime = 0;
+      closeSfx.play().catch(() => {});
+
+      setTimeout(() => {
+        letter.classList.add('folded');
+        envelope.classList.remove('open');
+
+        // Munculkan dialog setelah amplop tertutup kembali
+        setTimeout(() => {
+          dialogOverlay.classList.add('show');
+          setTimeout(() => dialog.classList.add('show'), 100);
+        }, 300);
+      }, 1300);
+    }
+
+    // Klik amplop → buka
+    envelope.addEventListener('click', e => {
+      e.stopPropagation();
+      bukaSurat();
+    });
+
+    // Klik surat → tutup
+    letter.addEventListener('click', e => {
+      e.stopPropagation();
+      tutupSurat();
+    });
+
+    // Biar klik teks tidak menutup surat
+    letter.querySelectorAll('h1, p').forEach(el => {
+      el.addEventListener('click', e => e.stopPropagation());
+    });
+
+// Modify tombol Ya
+    btnYes.addEventListener('click', () => {
+      dialogOverlay.classList.remove('show');
+      dialog.classList.remove('show');
+
+      alert("Aku sudah tahu kok ♡ Makasih ya sayang 💕");
+
+      // Setelah alert (user klik OK), slideshow & hujan deras dimulai
+      setTimeout(() => {
+        startSlideshow();
+
+        // Percepat hujan love jadi lebih deras (setiap 50ms)
+        clearInterval(window.loveInterval); // hentikan yang lama jika ada
+        window.loveInterval = setInterval(() => {
+          const h = document.createElement('div');
+          h.className = 'heart';
+          if (Math.random() > 0.4) h.classList.add('glow');
+          // ... (kode create heart sama seperti fungsi mulaiHujanLove kamu)
+          const hearts = ['❤','♡','💕','💖','💗','💘','💝','❣️','✨','🌸','🌷','🌹','🩷','💮'];
+          h.innerHTML = hearts[Math.floor(Math.random() * hearts.length)];
+          h.style.left = Math.random() * 100 + 'vw';
+          const size = 20 + Math.random() * 60;
+          h.style.fontSize = size + 'px';
+          const drift = (Math.random() - 0.5) * 400;
+          h.style.setProperty('--drift', drift + 'px');
+          h.style.animationDuration = (3 + Math.random() * 4) + 's';
+          document.getElementById('background').appendChild(h);
+          setTimeout(() => h.remove(), 10000);
+        }, 20); // sangat deras!
+      }, 300); // delay kecil agar alert selesai dulu
+    });
+
+    // Tombol Tidak (lucu biar ga baper)
+    btnNo.addEventListener('click', () => {
+      dialogOverlay.classList.remove('show');
+      dialog.classList.remove('show');
+      alert("Yahhh aku jadi sedih, kamu bohong kan ? 😢");
+    });
+
+    // PWA
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js').catch(() => {});
+    }
+
+        // === EFEK DEBU BERSINAR SAAT POINTER BERGERAK ===
+    document.addEventListener('mousemove', (e) => {
+      // Buat 2-4 partikel per gerakan mouse agar terlihat natural
+      const sparkleCount = 2 + Math.floor(Math.random() * 3);
+
+      for (let i = 0; i < sparkleCount; i++) {
+        const sparkle = document.createElement('div');
+        sparkle.className = 'pointer-sparkle';
+
+        // Posisi di sekitar cursor
+        const offsetX = Math.random() * 30 - 15;
+        const offsetY = Math.random() * 20 - 10;
+        sparkle.style.left = (e.clientX + offsetX) + 'px';
+        sparkle.style.top = (e.clientY + offsetY) + 'px';
+
+        // Durasi dan delay acak agar tidak seragam
+        const duration = 0.6 + Math.random() * 0.6;
+        sparkle.style.animationDuration = duration + 's';
+
+        document.body.appendChild(sparkle);
+
+        // Hapus setelah animasi selesai
+        setTimeout(() => {
+          if (sparkle.parentNode) sparkle.remove();
+        }, duration * 1000);
+      }
+    });
+
+    // Opsional: Efek yang sama saat touch di HP
+    document.addEventListener('touchmove', (e) => {
+      for (let touch of e.touches) {
+        const sparkleCount = 2 + Math.floor(Math.random() * 2);
+        for (let i = 0; i < sparkleCount; i++) {
+          const sparkle = document.createElement('div');
+          sparkle.className = 'pointer-sparkle';
+          const offsetX = Math.random() * 40 - 20;
+          const offsetY = Math.random() * 30 - 15;
+          sparkle.style.left = (touch.clientX + offsetX) + 'px';
+          sparkle.style.top = (touch.clientY + offsetY) + 'px';
+          const duration = 0.7 + Math.random() * 0.5;
+          sparkle.style.animationDuration = duration + 's';
+          document.body.appendChild(sparkle);
+          setTimeout(() => sparkle.remove(), duration * 1000);
+        }
+      }
+    });
+
+  </script>
+</body>
+</html>
