@@ -95,6 +95,45 @@
         document.getElementById('gallery').innerHTML = 
           '<p style="color:white;">Gagal memuat foto. Coba refresh halaman.</p>';
       });
+
+  <audio id="bgMusic" loop>
+    <source src="Kahitna - Cantik" type="audio/mpeg">
+    <source src="https://example.com/lagu-kamu.mp3" type="audio/mpeg">
+  </audio>
+
+  <script>
+    // Putar lagu otomatis saat halaman galeri foto dibuka
+    const music = document.getElementById('bgMusic');
+    
+    // Coba putar otomatis (kebanyakan browser blokir autoplay kecuali ada interaksi user)
+    music.volume = 0.4; // volume sedang agar tidak kencang
+    music.play().catch(() => {
+      // Jika autoplay diblokir, tampilkan tombol play sederhana
+      const playButton = document.createElement('button');
+      playButton.textContent = '🎵 Putar Lagu';
+      playButton.style.position = 'fixed';
+      playButton.style.bottom = '20px';
+      playButton.style.right = '20px';
+      playButton.style.padding = '12px 20px';
+      playButton.style.background = 'rgba(255,255,255,0.3)';
+      playButton.style.border = 'none';
+      playButton.style.borderRadius = '30px';
+      playButton.style.color = 'white';
+      playButton.style.fontSize = '16px';
+      playButton.style.cursor = 'pointer';
+      playButton.style.zIndex = '9999';
+      playButton.style.backdropFilter = 'blur(10px)';
+      playButton.onclick = () => {
+        music.play();
+        playButton.remove();
+      };
+      document.body.appendChild(playButton);
+    });
+
+    // Opsional: pause saat user klik di luar foto (tidak wajib)
+    document.addEventListener('click', () => {
+      // biarkan lagu tetap jalan
+    });
   </script>
 </body>
 </html>
