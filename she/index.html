@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>💕 Foto-foto untuk Widsy 💕</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 40px 20px;
+      background: linear-gradient(135deg, #a71c9b, #4c0942);
+      font-family: Arial, sans-serif;
+      text-align: center;
+      min-height: 100vh;
+    }
+    h1 {
+      color: #fff;
+      font-size: 28px;
+      margin-bottom: 30px;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+    }
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    .gallery img {
+      width: 100%;
+      height: auto;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+      transition: all 0.4s ease;
+      object-fit: cover;
+    }
+    .gallery img:hover {
+      transform: scale(1.08);
+      box-shadow: 0 20px 40px rgba(255,105,180,0.6);
+    }
+    .back {
+      margin-top: 50px;
+    }
+    .back a {
+      color: #fff;
+      background: rgba(255,255,255,0.2);
+      padding: 12px 24px;
+      border-radius: 30px;
+      text-decoration: none;
+      font-size: 18px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    }
+    .back a:hover {
+      background: rgba(255,255,255,0.3);
+    }
+  </style>
+</head>
+<body>
+  <h1>💕 Koleksi Foto untuk Widsy 💕</h1>
+  <div class="gallery" id="gallery"></div>
+
+  <div class="back">
+    <a href="../index.html">← Kembali ke Halaman Utama</a>
+  </div>
+
+  <script>
+    // Daftar semua ekstensi gambar yang didukung
+    const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp'];
+
+    // Ambil semua file dari GitHub API (otomatis baca isi folder she)
+    fetch('https://api.github.com/repos/Night-Lord23/you/contents/she')
+      .then(response => response.json())
+      .then(files => {
+        const gallery = document.getElementById('gallery');
+
+        files.forEach(file => {
+          const name = file.name.toLowerCase();
+          const isImage = imageExtensions.some(ext => name.endsWith(ext));
+
+          if (isImage && file.type === 'file') {
+            const img = document.createElement('img');
+            img.src = file.download_url;  // URL langsung ke foto
+            img.alt = file.name;
+            img.loading = 'lazy';
+            gallery.appendChild(img);
+          }
+        });
+
+        if (gallery.children.length === 0) {
+          gallery.innerHTML = '<p style="color:white; font-size:20px;">Belum ada foto di sini ♡</p>';
+        }
+      })
+      .catch(err => {
+        document.getElementById('gallery').innerHTML = 
+          '<p style="color:white;">Gagal memuat foto. Coba refresh halaman.</p>';
+      });
+  </script>
+</body>
+</html>
