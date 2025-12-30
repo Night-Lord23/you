@@ -64,11 +64,11 @@
     <a href="../index.html">← Kembali ke Halaman Utama</a>
   </div>
 
-  <script>
+    <script>
     // Daftar semua ekstensi gambar yang didukung
     const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp'];
 
-    // Ambil semua file dari GitHub API (otomatis baca isi folder she)
+    // Ambil semua file dari GitHub API
     fetch('https://api.github.com/repos/Night-Lord23/you/contents/she')
       .then(response => response.json())
       .then(files => {
@@ -80,7 +80,7 @@
 
           if (isImage && file.type === 'file') {
             const img = document.createElement('img');
-            img.src = file.download_url;  // URL langsung ke foto
+            img.src = file.download_url;
             img.alt = file.name;
             img.loading = 'lazy';
             gallery.appendChild(img);
@@ -95,19 +95,23 @@
         document.getElementById('gallery').innerHTML = 
           '<p style="color:white;">Gagal memuat foto. Coba refresh halaman.</p>';
       });
+  </script>
 
+  <!-- AUDIO BACKGROUND MUSIC -->
   <audio id="bgMusic" loop>
-    <source src="Kahitna - Cantik" type="audio/mp3">
+    <!-- GANTI nama-file-lagu.mp3 dengan nama lagu kamu yang sudah diupload ke folder she -->
+    <source src="kahitna-cantik.mp3" type="audio/mpeg">
+    Browser tidak mendukung audio.
   </audio>
 
   <script>
-    // Putar lagu otomatis saat halaman galeri foto dibuka
+    // Putar lagu otomatis saat halaman dibuka
     const music = document.getElementById('bgMusic');
-    
-    // Coba putar otomatis (kebanyakan browser blokir autoplay kecuali ada interaksi user)
-    music.volume = 0.6; // volume sedang agar tidak kencang
+    music.volume = 0.6;
+
+    // Coba autoplay
     music.play().catch(() => {
-      // Jika autoplay diblokir, tampilkan tombol play sederhana
+      // Jika diblokir, tampilkan tombol play
       const playButton = document.createElement('button');
       playButton.textContent = '🎵 Putar Lagu';
       playButton.style.position = 'fixed';
@@ -127,11 +131,6 @@
         playButton.remove();
       };
       document.body.appendChild(playButton);
-    });
-
-    // Opsional: pause saat user klik di luar foto (tidak wajib)
-    document.addEventListener('click', () => {
-      // biarkan lagu tetap jalan
     });
   </script>
 </body>
