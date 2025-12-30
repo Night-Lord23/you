@@ -97,8 +97,7 @@
       });
 
   <audio id="bgMusic" loop>
-    <source src="Kahitna - Cantik" type="audio/mpeg">
-    <source src="https://example.com/lagu-kamu.mp3" type="audio/mpeg">
+    <source src="Kahitna - Cantik" type="audio/mp3">
   </audio>
 
   <script>
@@ -106,7 +105,7 @@
     const music = document.getElementById('bgMusic');
     
     // Coba putar otomatis (kebanyakan browser blokir autoplay kecuali ada interaksi user)
-    music.volume = 0.4; // volume sedang agar tidak kencang
+    music.volume = 0.6; // volume sedang agar tidak kencang
     music.play().catch(() => {
       // Jika autoplay diblokir, tampilkan tombol play sederhana
       const playButton = document.createElement('button');
